@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+<!-- <script type="text/javascript" src="https://getfirebug.com/firebug-lite-debug.js"></script> -->
+<meta name="description" content="Assignment 2 Square Transform" />
+  	<meta charset="utf-8" />
+	<style>
+		#container {
+			background: #000000;
+			width: 100%;
+			height: 100%;
+		}
+  </style>
+<meta charset=utf-8 />
+<title>Square Transform</title>
+  
+<style id="jsbin-css">
+</style>
+</head>
+<body>
+<div id="container">
+</div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/85/three.min.js"></script>
+  <script type="text/javascript">
+    // set the scene size.
+    var WIDTH = window.innerWidth, HEIGHT = window.innerHeight;
+    // set some camera attributes. VIEW_ANGLE is the field-of-view. The lower this angle is, the
+    // closer the model appears to the front of the viewport.
+    var VIEW_ANGLE = 65, ASPECT = WIDTH / HEIGHT, NEAR = 0.1, FAR = 1000;
+    // assign function to variable for checking WebGLRenderer compatibility.
+    var supportsWebGL = ( function () 
+                         { try { return !! window.WebGLRenderingContext && !! document.createElement( 'canvas' )
+                           .getContext( 'experimental-webgl' );
+                               } catch( e ) { return false; } } )();
+    // create a WebGLRenderer if it is supported, otherwise create a CanvaRenderer.
+    if ( supportsWebGL )
+      var renderer = new THREE.WebGLRenderer();
+    else
+      var renderer = new THREE.CanvasRenderer();
+    // create a clock object to time refresh the scene for the transformations.
+    var clock = new THREE.Clock();
+    
+    // create our scene, the 3D world we will place our model into.
+    var scene = new THREE.Scene();
+    // create a camera (eye) so we can look into our scene.
+    var camera = new THREE.PerspectiveCamera(VIEW_ANGLE,ASPECT,NEAR,FAR);
+    
+    // the camera starts at 0,0,0 so pull it back, otherwise the model
+    // will be right up against the front plane of the viewport.
+    camera.position.z = 200;    	
+    
+    // add the camera to the scene.
+    scene.add(camera)
+    // start the renderer
+    renderer.setSize(WIDTH, HEIGHT);
+    // attach the render-supplied DOM element to the container div.
+    document.getElementById('container').appendChild(renderer.domElement);
+    // ----------------------------------------------------------------------------------------
+    //  END OF THE STANDARD CODE FOR THE ASSIGNMENT
+    //  Following this is where you must place your own custom code to complete the assignment
+    // ----------------------------------------------------------------------------------------
+    // define our basic geometry.
+    var squareGeometry = new THREE.Geometry();
+    
+    // create a vertex for each corner of the square object, with the origin at the center.
+    // the z coordinates are all 0 since what we want is a flat square (not a cube).
+    squareGeometry.vertices.push( 
+      new THREE.Vector3(20, 20, 0), 
+      new THREE.Vector3(20, -20, 0), 
+      new THREE.Vector3(-20, -20, 0),
+      new THREE.Vector3(-20, 20, 0),
+    );
+    
+    // each Face3 here is a triangle, so we need TWO to make a square
+    // using all four vertices we created above. If one is commented out, you will
+    // see that only a single triangle will remain, instead of a square.
+    squareGeometry.faces.push(new THREE.Face3(0, 1, 2));
+    squareGeometry.faces.push(new THREE.Face3(0, 3, 2));
+    
+    // Use the MeshBasicMaterial because we just want a solid blue square, nothing fancier.
+    // DoubleSide means it is colored on both sides of the plane.
+    var material = new THREE.MeshBasicMaterial( {color: 0x0000ff, side: THREE.DoubleSide} );
+    
+    // Make the mesh for our square, passing in our defined geometry and material specifications.
+    var square = new THREE.Mesh( squareGeometry, material );
+    
+    // Lets add our square to the scene so we can see it!
+    scene.add(square);
+    // Add an animation that simply and slowly rotates around the y-axis.
+    // Change to z or y to rotate around those instead (or more than one at once!).
+    var animate = function () {
+      
+      requestAnimationFrame( animate );
+     
+      // 1) SCALE:
+      
+      // Create a timer with the clock object, so we can animate scaling.
+      let timer = clock.getElapsedTime();
+      if (timer >= 10.0)
+      {
+          // if timer is greater that or equal to 10, return to start. Square scales up.
+          clock = new THREE.Clock;
+          square.scale.set(1,1,1);
+      }
+      else
+      {
+          // scales/shrinks down. Makes it look like the square is receding into the distance.
+          square.scale.x = 1-(timer/5.0);
+          square.scale.y = 1-(timer/5.0);
+          square.scale.z = 1-(timer/5.0);   
+      }
+      
+      
+      // 2) ROTATION:
+      square.rotation.y += 0.05; // assignment - gentle rotation around the y axis.
+      // square.rotation.x += 0.50; // insanely fast rotation around the x axis.
+      // square.rotation.z += 0.001; // super slow rotation around the z axis.
+      
+      // 3) TRANSLATION:
+      // Translate the square in the +x direction, then once it is at (200, 0, 0), 
+      // return to (-200, 0, 0) to start again.
+      var interval = setInterval(translate, 1000);
+      function translate() {
+        if (square.position.x === 200) {
+          square.position.x = -200; 
+          clearInterval(interval); 
+        } else {
+          square.position.x++; 
+          clearInterval(interval); 
+        }
+      }
+      
+      /* 
+      
+      References
+      
+      Cunningham, S. (2003). Computer Graphics: Programming, Problem Solving, and Visual Communication. 
+      Retrieved from https://my.uopeople.edu/pluginfile.php/389065/mod_resource/content/4/ComputerGraphics-SteveCunningham.pdf
+      
+      three.js (n.d.). Manual. Retrieved from https://threejs.org/docs/index.html#manual/en/introduction/Creating-a-scene
+      
+      */
+      
+      // render the scene.
+      renderer.render( scene, camera );
+    };
+    // Start the animation.
+    animate();
+  </script>
+  
+
+
+</body>
+</html>
